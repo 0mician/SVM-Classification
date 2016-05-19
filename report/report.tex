@@ -9,9 +9,12 @@
 \usepackage{url}
 \usepackage{appendix}
 \usepackage{float}
+\usepackage{multirow}
 \usepackage[bottom]{footmisc}
 \usepackage{titling}
-
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage[numbered,autolinebreaks,useliterate]{mcode}
 \begin{document}
 
 \include{title}
@@ -53,13 +56,662 @@ The exercises in this section consisted of exploring the properties of
 Support Vector Machines via a web application
 \footnote{http://cs.stanford.edu/people/karpathy/svmjs/demo/}
 
-\subsection{Linear kernel (q1,q2,q3)}
-\subsection{RBF kernel (q4,q5)}
-\subsection{Other (q6,q7,q8)}
+\subsection{Linear kernel (questions 1 to 3)}
+The data with which we are presented in the application is not
+linearly separable. Adjusting to a linear kernel, we see that there
+are 5 points of each classes, a total of 6 support vectors, and 1
+point (green) that is misclassified (see \ref{fig:lin1}). Depending on
+where the points are added, you can preserve the total number of
+misclassified points. Points added in the same class region, and close
+to other of the same class tend not to affect the classifier too much.
+
+Misclassified points can change the classifier drastically,
+potentially switching the regions if one class of points outweighs the
+other. If the balance of points between the two classes shifts too
+much, the whole region can become classified as being of only 1 class.
+ 
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=0.9\linewidth]{1-2-1-linear.png}
+      \caption{Initial setting (linear kernel)}
+      \label{fig:lin1}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=0.9\linewidth]{1-2-1-linear_10.png}
+      \caption{After addition of 10 datapoints}
+      \label{fig:lin2}
+    \end{subfigure}
+    %\caption{Linear kernel SVM with misclassication}
+    \label{fig:bull}
+\end{figure}
+
+For the same setting, varying the values of the hyperparameter for the
+regularization impacts the margins of the classifier. Eventually
+tolerating even more misclassification when C is extremely small.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=0.9\linewidth]{1-2-1-linear_c_max.png}
+      \caption{Value of C: 100}
+      \label{fig:lin3}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=0.9\linewidth]{1-2-1-linear_c_min.png}
+      \caption{Value of C: 0.025}
+      \label{fig:lin4}
+    \end{subfigure}
+    %\caption{Impact of regularization on the linear classifier boundaries}
+    \label{fig:bull}
+\end{figure}
+
+\subsection{RBF kernel (questions 4 and 5)}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{.5\textwidth}
+      In this section, we were asked to switch away from a linear kernel and
+      opt for the Radial Basis Function kernel (RBF). RBF are localized
+      function, centered at a particular value, and use a gaussian fit with
+      a certain spread around the center. 
+
+      The same dataset as defined above can be seen on the graphics on
+      the right. Here, one can observe that all points have been
+      correctly classified, but the area defined are very wobbly,
+      displaying clear signs of overfitting.
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \vspace{-65pt}
+      \centering
+      \includegraphics[width=0.9\linewidth]{1-2-1-kernel.png}
+      \caption{RFB kernel}
+      \label{fig:lin4}
+    \end{subfigure}
+\end{figure}
+
+\subsection{Kernel (question 6)}
+
+
+\subsection{Support vectors (question 7 and 8)}
+
+Support vectors are vectors in the data space (p-dimensional) that
+support the maximal margin hyperplane. If those particular vectors are
+moved, then the resulting margin moves as well. Importantly, the
+classifier's hyperplane depends only on these support vectors, hence
+the classifier can be expressed using them. This can result in an
+advantage in terms of compression, as the dataset containing many
+vectors can be mostly thrown away, saving only those support vectors
+that are important for the classifier's prediction power.
+
+In the figure \ref{fig:ker7reduced} below, one can see such an effect of
+compression. Originally, 150 datapoints were present, but only 10 of
+them are necessary to construct a satisfying classifier. In this
+example, I played around with the parameters to obtain the reduced
+number of support vectors. In figure \ref{fig:ker7spiral} however, the
+entire dataset consists of the support vectors. It is not possible to
+reduce the amount of support vectors by tuning the parameters without
+impacting the boundaries of the classifier.
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=0.9\linewidth]{1-2-1-kernel7.png}
+      \caption{Support vectors reduce dataset}
+      \label{fig:ker7reduced}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=0.9\linewidth]{1-2-1-kernel7spiral.png}
+      \caption{No compression}
+      \label{fig:ker7spiral}
+    \end{subfigure}
+    \caption{Support vectors}
+    \label{fig:ker7}
+\end{figure}
 
 \section{Least-Squares Support Vector Machine}
 
+\subsection{Iris dataset}
+
+\subsubsection{LS-SVM sample script exploration}
+For this section, I explored the iris dataset using the LS-SVM library
+developed at KU Leuven. The dataset contains 2 distinct classes that
+are not linearly separable.
+
+The figure \ref{fig:iris_linpol} below summarizes visually the
+classifiers built using linear and polynomial kernels for the
+classification task. For the polynomial kernel, I used degree 2, 3,
+and 4. When using a polynomial of degree 1, I obviously get exactly
+the same results as when using a linear kernel (comforting though). In
+the table \ref{table:iris_linpol}, you can see the error rate on
+the validation set dropping as the flexibility of our model is
+raised. The very wobbly region defined by the kernel of degree 4 seem
+to display signs of overfitting as the region in the top-rigth corner.
+
+Since the dataset consists of regions that are not linearly separable,
+the linear kernel performs terribly.
+
+It is not obvious to me that there is a connection between the
+$\sigma$ parameter of the RBF kernel, which controls the spread around
+the center in the gaussian, and the degree of the polynomial kernel. I
+would expect that overfitting would occur in tandem as you lower the
+value of $sigma$, and increase the degree of the polynomial.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{l|l|l|}
+    \cline{2-3}
+    & \# Missclassified & \% Error \\ \hline
+    \multicolumn{1}{|l|}{Linear kernel}       & 11                & 55\%     \\ \hline
+    \multicolumn{1}{|l|}{Polynomial degree 2} & 5                 & 5\%      \\ \hline
+    \multicolumn{1}{|l|}{Polynomial degree 3} & 0                 & 0\%      \\ \hline
+    \multicolumn{1}{|l|}{Polynomial degree 4} & 0                 & 0\%      \\ \hline
+  \end{tabular}
+  \caption{Missclassification summary (polynomial kernel)}
+  \label{table:iris_linpol}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{iris_linpol.pdf}
+    \caption{Linear and polynomial kernel classifiers}
+    \label{fig:iris_linpol}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{iris_rbf.pdf}
+    \caption{RBF classifier with different values of sigma}
+    \label{fig:iris_linpol}
+\end{figure}
+
+\begin{table}[]
+  \centering
+  \begin{tabular}{l|l|l|}
+    \cline{2-3}
+    & \# Missclassified & \% Error \\ \hline
+    \multicolumn{1}{|l|}{RBF $\gamma=1$, $\sigma=0.01$} & 2                 & 10\%     \\ \hline
+    \multicolumn{1}{|l|}{RBF $\gamma=1$, $\sigma=0.1$}  & 0                 & 0\%      \\ \hline
+    \multicolumn{1}{|l|}{RBF $\gamma=1$, $\sigma=1$}    & 0                 & 0\%      \\ \hline
+    \multicolumn{1}{|l|}{RBF $\gamma=1$, $\sigma=10$}   & 0                 & 0\%      \\ \hline
+  \end{tabular}
+  \label{table:iris_rbf}
+  \caption{Missclassification summary (RBF kernel)}
+\end{table}
+
+This last figure \ref{fig:iris_overfitting} illustrate a bit one of
+the extremes of the bias-variance tradeoff and overfitting. As seen in
+the previous graphs, with less flexible models, and especially in this
+case with a linear model (high bias), you run the risk of not
+capturing the pattern in your dataset correctly and get terrible
+results on the validation set. On the other end of the spectrum, with
+very flexible models, your variance increases too much and although
+the performance on the training set are close to perfection, the
+results on the validation set are off
+\ref{table:iris_overfitting}. Typically, you have \emph{memorized}
+your dataset, but fail to obtain good generalization.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{l|l|l|}
+    \cline{2-3}
+    & \# Missclassified & \% Error \\ \hline
+    \multicolumn{1}{|l|}{RBF $\gamma=1$, $\sigma=0.001$} & 6                 & 30\%     \\ \hline
+    \multicolumn{1}{|l|}{RBF $\gamma=1$, $\sigma=0.01$}  & 2                 & 10\%      \\ \hline
+    \multicolumn{1}{|l|}{Polynomial degree 15}    & 1                 & 5\%      \\ \hline
+    \multicolumn{1}{|l|}{Polynomial degree 20}   & 4                 & 20\%      \\ \hline
+  \end{tabular}
+  \label{table:iris_overfitting}
+  \caption{Missclassification summary (Overfitting)}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{iris_overfitting.pdf}
+    \caption{Overfitting with polynomial and RBF kernels}
+    \label{fig:iris_overfitting}
+\end{figure}
+
+\subsubsection{RBF kernel: sigma}
+
+In this section, we explore further the effect of the bandwidth
+parameter $\sigma^2$ for the RBF kernel and its effect on
+generalization as measured on a test set.
+
+Below is the corresponding matlab script and figure
+\ref{fig:rbf_sigma} used to establish the interval out of which to
+pick a reasonable $\sigma^2$. The idea here is to fix the value of
+$\gamma$ to 1, and establish a logarithmic grid of possible values for
+$\sigma^2$, systematically building models using the training set and
+evaluating the performance on the test set. 
+
+This allows us to define an interval for the choice of the parameter:
+$\sigma^2 \in [0.1,10]$
+
+\begin{lstlisting}
+gam = 1; type='c'; sig2list=logspace(-3,3,60); errlist=[];
+
+for sig2=sig2list,
+    [alpha,b] = trainlssvm({X,Y,type,gam,sig2,'RBF_kernel'});
+    % Obtain classification of test set using trained classifier
+    [Yht, Zt] = simlssvm({X,Y,type,gam,sig2,'RBF_kernel'}, {alpha,b}, Xt);
+    err = sum(Yht~=Yt); errlist = [errlist; err]; 
+end
+
+figure('Color',[1 1 1]);
+semilogx(sig2list, errlist./20.*100, 'b-');
+title('Test missclassification vs. Sigma');
+xlabel('Sigma (log_{10})'); ylabel('Missclassification %');
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{rbf_sigma.pdf}
+    \caption{Tuning of parameter $\sigma^2$ for fixed $\gamma=1$}
+    \label{fig:rbf_sigma}
+\end{figure}
+
+\subsubsection{RBF kernel: regularization constant}
+
+In this section, we explore further the effect of the tuning parameter
+$\gamma$, used for regularization, and its effect on generalization as
+measured on a test set.
+
+The procedure to select the value of the hyperparameter is the same as described in the previous section. The result indicates to chose $\gamma \in [0.15,80]$
+\begin{lstlisting}
+sig2 = 0.1; gamlist=logspace(-3,3,60); type='c'; errlist=[];
+
+for gam=gamlist,
+    [alpha,b] = trainlssvm({X,Y,type,gam,sig2,'RBF_kernel'});
+    % Obtain classification of test set using trained classifier
+    [Yht, Zt] = simlssvm({X,Y,type,gam,sig2,'RBF_kernel'}, {alpha,b}, Xt);
+    err = sum(Yht~=Yt); errlist = [errlist; err];
+end
+
+figure('Color',[1 1 1]);
+semilogx(gamlist, errlist./20.*100, 'b-');
+title('Test missclassification vs. Gamma (fixed \sigma^2=0.1)');
+xlabel('\gamma (log_{10})'); ylabel('Missclassification %');
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{rbf_gamma.pdf}
+    \caption{Tuning of parameter $\gamma$ for fixed $\sigma^2=0.1$}
+    \label{fig:rbf_gamma}
+\end{figure}
+
+\subsection{Choice of hyper-parameters}
+\subsubsection{Validation set}
+
+For this section, I created a validation set for the Iris dataset
+consisting of a fifth of the total number of observations used in the
+previous section to train the classifier. Here is the code for that
+purpose:
+
+\begin{lstlisting}
+idx = randperm(size(X,1));
+Xtrain = X(idx(1:80),:);
+Ytrain = Y(idx(1:80),:);
+Xval = X(idx(81:100),:);
+Yval = Y(idx(81:100),:);
+\end{lstlisting}
+
+In order to choose appropriate values for the hyper parameters, I
+trained classifiers using a log grid of $\sigma$ and $\gamma$, and
+computed the test error on the validation dataset as follow:
+
+\begin{lstlisting}
+% Searching sigma space for a good value (good generalization on test set)
+sig2list=logspace(-3,3,60); errsiglist=[]; gam = 1;
+for sig2=sig2list,
+    [alpha,b] = trainlssvm({Xtrain,Ytrain,'c',gam,sig2,'RBF_kernel'});
+    % Obtain classification of test set using trained classifier
+    estYval = simlssvm({Xtrain,Ytrain,'c',gam,sig2,'RBF_kernel'}, {alpha,b}, Xval);
+    err = sum(estYval~=Yval); errsiglist = [errsiglist; err]; 
+end
+
+% Searching sigma space for a good value (good generalization on test set)
+sig2 = 0.1; gamlist=logspace(-3,3,60); type='c'; errgamlist=[];
+for gam=gamlist,
+    [alpha,b] = trainlssvm({Xtrain,Ytrain,'c',gam,sig2,'RBF_kernel'});
+    % Obtain classification of test set using trained classifier
+    estYval = simlssvm({Xtrain,Ytrain,'c',gam,sig2,'RBF_kernel'}, {alpha,b}, Xval);
+    err = sum(estYval~=Yval); errgamlist = [errgamlist; err];
+end
+\end{lstlisting}
+
+The figure \ref{fig:hyperparams_choice1} gives an overview of the
+misclassification rate for different values of the
+hyperparameters. One can observe that the ``optimal'' range in which
+to select the parameters if slightly different than that of the
+previous section. Since we have defined a different set to test the
+performance and given that we have few observations (\textless 100),
+we can expect variance in the evaluation of test error depending on
+the split of the dataset between training and validation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{hyperparams_choice1.pdf}
+    \caption{Tuning of parameter $\gamma$ and $\sigma^2$ based on the
+      validation set}
+    \label{fig:hyperparams_choice1}
+\end{figure}
+
+\subsubsection{Cross validation}
+
+Using cross validation is a common technique in statistics to help
+remove the variance due to the random split of the dataset between
+training set and validation set. In smaller datasets, high variance
+can ensue from validating a model given one split, or another
+split. By systematically building multiple splits, training and
+validating the models, one can obtain a more average test error. 
+
+In this section, we used 10 fold cross validation, which consists in
+creating 10 different splits of the original dataset. For each split,
+90 percent of the data is used to train a model, and 10 percent is
+used for validation. At each new split, there is no overlap of the
+test cases with previous test cases, so the whole dataset is
+surveyed. The test errors are averaged accross the 10 splits to obtain
+the average test error on the whole dataset.
+
+For the LOOCV, the procedure is the same, but only a single datapoint
+is kept at each split to test the model. The procedure is thus
+repeated n times (n being the number of observations).
+
+These are the results for the Iris dataset:
+\begin{verbatim}
+>> crossvalidate({X, Y, 'c', gam, sig2, 'RBF_kernel'}, 10, 'misclass');
+    0.0600
+
+>> leaveoneout({X, Y, 'c', gam, sig2, 'RBF_kernel'}, 'misclass');
+    0.0500
+\end{verbatim}
+
+The LOOCV can be very computationally expensive on large datasets,
+though there exists exceptions to that (eg, in the case of linear
+regression, one can compute the LOOCV using a simple analytical
+formula). The LOOCV is also known to have more bias since it uses
+systematically ``almost'' the whole dataset. It can however be useful
+on datasets containing very few observations.
+
+\subsubsection{Optimization techniques}
+
+In this section, we try to optimize the hyperparameters using global
+optimization techniques. The results are reported in
+\ref{table:hyperparamstuning}. One thing to note is the stochasticity
+of the search process. Accross multiple runs (3 illustrated in the
+table), one obtains widely variable results in terms of the selected
+hyperparameters. The hyperparameter $\sigma^2$ however falls into the
+range previously established. $\gamma$ is a bit higher in magnitude
+than expected using the previous approach.
+
+The combination of all optimization approaches seem to converge
+rapidly to a minimum cost.
+
+\begin{lstlisting}
+% coupled simulated annealing
+model_csa = {X, Y, 'c', [], [], 'RBF_kernel', 'csa'};
+[gam1, sig21, cost1] = tunelssvm(model_csa, 'simplex', 'crossvalidatelssvm', {10, 'misclass'});
+[gam2, sig22, cost2] = tunelssvm(model_csa, 'gridsearch', 'crossvalidatelssvm', {10, 'misclass'});
+% randomized directional search
+model_ds = {X, Y, 'c', [], [], 'RBF_kernel', 'ds'};
+[gam3, sig23, cost3] = tunelssvm(model_ds, 'simplex', 'crossvalidatelssvm', {10, 'misclass'});
+[gam4, sig24, cost4] = tunelssvm(model_ds, 'gridsearch', 'crossvalidatelssvm', {10, 'misclass'});
+\end{lstlisting}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{cl|l|l|l|l|l|l|l|l|l|}
+    \cline{3-11}
+    \multicolumn{1}{l}{}                       &            & \multicolumn{3}{c|}{Run 1}   & \multicolumn{3}{c|}{Run 2}   & \multicolumn{3}{c|}{Run 3}   \\ \cline{3-11} 
+    \multicolumn{1}{l}{}                       &            & $\gamma$ & $\sigma^2$ & Cost & $\gamma$ & $\sigma^2$ & Cost & $\gamma$ & $\sigma^2$ & Cost \\ \hline
+    \multicolumn{1}{|c|}{\multirow{2}{*}{CSA}} & simplex    & 2.14     & 1.32       & 0.04 & 3670     & 0.06       & 0.03 & 123.84   & 0.03       & 0.03 \\ \cline{2-11} 
+    \multicolumn{1}{|c|}{}                     & gridsearch & 176.24   & 0.02       & 0.03 & 0.65     & 0.09       & 0.04 & 0.11     & 0.73       & 0.04 \\ \hline
+    \multicolumn{1}{|c|}{\multirow{2}{*}{DS}}  & simplex    & 0.93     & 6.66       & 0.04 & 7.60     & 2.37       & 0.05 & 4.54     & 1.27       & 0.05 \\ \cline{2-11} 
+    \multicolumn{1}{|c|}{}                     & gridsearch & 0.05     & 0.93       & 0.03 & 41.96    & 0.21       & 0.03 & 0.05     & 0.21       & 0.03 \\ \hline
+  \end{tabular}
+  \caption{Hyperparameters tuning}
+  \label{table:hyperparamstuning}
+\end{table}
+
+\subsubsection{ROC}
+
+Receiver Operating Characteristics are a very popular tool to assess
+the quality of a classifier in terms of predictive power. They can be
+thought of as continuously evaluated (by changing the decision
+treshold) contingency tables. 
+
+One should not build ROC using the training dataset for the same
+reason that you don't assess the quality of a model based on the
+training dataset. Many techniques systematically minimize the error
+between the model and the training observations (eg, least mean
+squares). Thus the ROC curve can be made really good by just
+``memorizing'' the dataset, without any regard for good
+generalization.
+
 \section{Applications} 
+
+\subsection{Ripley dataset}
+\subsubsection{Data visualization}
+
+A scatterplot of the training dataset is shown on figure
+\ref{fig:ripley_scatter}. The 2 categories seem to be overlapping
+quite a bit, and are separated (though not clearly) on the vertical
+axis, with the upper part of the scatterplot consisting mostly of one
+category (here ``1''), and the bottom part of the scatterplot, with
+the other category (here ``-1''). Further, it would seem that the
+``-1'' category has 2 centroid, one around X=-0.75, and the other
+around X=0.4. The same observation can be made for the category ``1'',
+though the separation between the 2 centroids is less pronouced. 
+
+Intuitively, it would seem that a linear classifier may do a good job
+at classifying observations that are further appart to the Y=0.5 axis,
+but will perform poorly close to that region due to considerable
+overlap.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{ripley_scatter.pdf}
+    \caption{Ripley dataset scatterplot by group}
+    \label{fig:ripley_scatter}
+\end{figure}
+
+\subsubsection{Linear model}
+
+In order to test the intuition about the linear separability, I built
+a LS-SVM model that has a polynomial kernel of degree 1. The resulting
+classifier can be seen on the left-hand side of figure
+\ref{fig:ripley_lin_rbf}
+
+\begin{lstlisting}
+gamlist=logspace(-4,3); type='c'; errlist=[];
+
+for gam=gamlist,
+    [alpha,b] = trainlssvm({Xt,Yt,type,gam,[],'lin_kernel'});
+    [Yht, Zt] = simlssvm({Xt,Yt,type,gam,[],'lin_kernel'}, {alpha,b}, X);
+    err = sum(Yht~=Y); errlist = [errlist; err];
+end
+[min, index] = min(errlist);
+plotlssvm({Xt,Yt,type,gamlist(index),[],'lin_kernel','preprocess'},{alpha,b});
+\end{lstlisting}
+
+\subsubsection{RBF model}
+
+The resulting classifier can be seen on the right-hand side of figure
+\ref{fig:ripley_lin_rbf}
+
+\begin{lstlisting}
+model_csa = {Xt, Yt, 'c', [], [], 'RBF_kernel', 'csa'};
+[gam, sig2, cost] = tunelssvm(model_csa, 'simplex', 'crossvalidatelssvm', {10, 'misclass'});
+
+[alpha,b] = trainlssvm({Xt,Yt,'c',gam,sig2,'RBF_kernel'});
+estYval = simlssvm({Xt,Yt,'c',gam,sig2,'RBF_kernel'}, {alpha,b}, X);
+err = sum(estYval~=Y);
+plotlssvm({Xt,Yt,type,gam,sig2,'RBF_kernel','preprocess'},{alpha,b});
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{ripley_lin_RBF.pdf}
+    \caption{Ripley dataset, left linear kernel, right RBF kernel}
+    \label{fig:ripley_lin_rbf}
+\end{figure}
+
+\subsubsection{ROC curves}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.20]{ripley_roc.jpg}
+    \caption{ROC of both classifiers}
+    \label{fig:ripley_rbf}
+\end{figure}
+
+\subsubsection{Final model selection}
+
+There really isn't much support for and RBF kernel based modelling for
+this dataset. As illustrated by the ROC curves, the performance on the
+validation set of the RBF classifier is only marginally superior.
+
+The Ripley dataset consists of overlapping gaussian distribution, so
+using a simpler model that incorporates a linear classifier makes
+sense here.
+
+\subsection{Breast cancer dataset}
+
+\subsubsection{Data visualization}
+
+This dataset contains significantly more variables than the previous
+one and cannot be easily plotted for interpretation. A quick boxplot
+of the 30 variables reveals a lot of variance in the scale, so I
+performed dimensionality reduction using Principal component analysis
+with scaling using variance. The results are shown on figure
+\ref{fig:breast_pcaviz}. From the importance of principal component
+plot, one can see that the first 3 PC explain a large amount of the
+variability in the data. Linear separability seems to appear when
+plotting the data using 3PC and 2PC. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{breast_pcaviz.pdf}
+    \caption{Principal components analysis and visualization}
+    \label{fig:breast_pcaviz}
+\end{figure}
+
+\subsubsection{Linear model}
+
+The reported performance of the classification for the test set is: 96.4\%
+
+\begin{lstlisting}
+gamlist=logspace(-3,3); type='c'; errlist=[];
+
+for gam=gamlist,
+    [alpha,b] = trainlssvm({trainset,labels_train,type,gam,[],'lin_kernel'});
+    [Yht, Ylin] = simlssvm({trainset,labels_train,type,gam,[],'lin_kernel'}, {alpha,b}, testset);
+    err = sum(Yht~=labels_test); errlist = [errlist; err];
+end
+[min, index] = min(errlist);
+[Yht, Ylin] = simlssvm({trainset,labels_train,type,gamlist(index),[],'lin_kernel'}, {alpha,b}, testset);
+perf_lin = (1-errlist(index)/numel(labels_test))*100;
+\end{lstlisting}
+
+\subsubsection{RBF model}
+
+The reported performance of the classification for the test set is: 97.6\%
+
+\begin{lstlisting}
+model_csa = {trainset, labels_train, 'c', [], [], 'RBF_kernel', 'csa'};
+[gam, sig2, cost] = tunelssvm(model_csa, 'simplex', 'crossvalidatelssvm', {10, 'misclass'});
+
+[alpha,b] = trainlssvm({trainset,labels_train,'c',gam,sig2,'RBF_kernel'});
+[estYval, YRBF] = simlssvm({trainset,labels_train,'c',gam,sig2,'RBF_kernel'}, {alpha,b}, testset);
+err = sum(estYval~=labels_test); perf_rbf = (1-err/numel(labels_test))*100;
+\end{lstlisting}
+
+\subsubsection{ROC curves}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{breast_ROC.pdf}
+    \caption{ROC of both classifiers}
+    \label{fig:breast_ROC}
+\end{figure}
+
+\subsubsection{Final model selection}
+
+Similarly to section 4.1.5, we see that isn't much support for and RBF
+kernel based modelling for this dataset. As illustrated by the ROC
+curves, the performance on the validation set of the RBF classifier is
+only marginally superior.
+
+This analysis is comforted by the fact that visually one can see a
+linear separability in the principal components plot.
+
+\subsection{Diabetes database}
+
+\subsubsection{Data visualization}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{diabetes_pcaviz.pdf}
+    \caption{Principal components visualization}
+    \label{fig:diabetes_pcaviz}
+\end{figure}
+
+\subsubsection{Linear model}
+
+The reported performance of the classification for the test set is: 79.8\%
+
+\begin{lstlisting}
+gamlist=logspace(-3,3); type='c'; errlist=[];
+
+for gam=gamlist,
+    [alpha,b] = trainlssvm({trainset,labels_train,type,gam,[],'lin_kernel'});
+    [Yht, Ylin] = simlssvm({trainset,labels_train,type,gam,[],'lin_kernel'}, {alpha,b}, testset);
+    err = sum(Yht~=labels_test); errlist = [errlist; err];
+end
+[min, index] = min(errlist);
+[Yht, Ylin] = simlssvm({trainset,labels_train,type,gamlist(index),[],'lin_kernel'}, {alpha,b}, testset);
+perf_lin = (1-errlist(index)/numel(labels_test))*100;
+\end{lstlisting}
+
+\subsubsection{RBF model}
+
+The reported performance of the classification for the test set is: 76.1\%
+
+\begin{lstlisting}
+model_csa = {trainset, labels_train, 'c', [], [], 'RBF_kernel', 'csa'};
+[gam, sig2, cost] = tunelssvm(model_csa, 'simplex', 'crossvalidatelssvm', {10, 'misclass'});
+
+[alpha,b] = trainlssvm({trainset,labels_train,'c',gam,sig2,'RBF_kernel'});
+[estYval, YRBF] = simlssvm({trainset,labels_train,'c',gam,sig2,'RBF_kernel'}, {alpha,b}, testset);
+err = sum(estYval~=labels_test); perf_rbf = (1-err/numel(labels_test))*100;
+\end{lstlisting}
+
+\subsubsection{ROC curves}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.40]{diabetes_ROC.pdf}
+    \caption{ROC of both classifiers}
+    \label{fig:diabetes_ROC}
+\end{figure}
+
+\subsubsection{Final model selection}
+
+For this dataset, the performances are slightly worse than we had for
+the previous ones. I couldn't see evidences of linear separability in
+the PCA plot with 3 PC, but that does not exclude that one exists. The
+performance of both kernels are very similar, so I would advise to go
+with the simplest method, which is the linear kernel.
 
 \bibliographystyle{ieeetr} \bibliography{bib-db}
 \end{document}
