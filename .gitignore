@@ -24,6 +24,7 @@ export_fig/
 *.aux
 *.bbl
 *.blg
+*.toc
 
 # R
 *.RData
