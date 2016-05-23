@@ -1,3 +1,5 @@
+clc, clear all, close all;
+
 load ../dataset/ripley
 addpath('/home/sid/Dev/SVM-Classification/resources/svm')
 addpath('/home/sid/Dev/SVM-Classification/resources/SVMCourse/LSSVMlab')
