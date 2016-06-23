@@ -32,7 +32,7 @@ end
 [Yht, Ylin] = simlssvm({trainset,labels_train,type,gamlist(index),[],'lin_kernel'}, {alpha,b}, testset);
 perf_lin = (1-errlist(index)/numel(labels_test))*100;
 
-% RBF with tunning 
+% RBF with tuning 
 model_csa = {trainset, labels_train, 'c', [], [], 'RBF_kernel', 'csa'};
 [gam, sig2, cost] = tunelssvm(model_csa, 'simplex', 'crossvalidatelssvm', {10, 'misclass'});
 

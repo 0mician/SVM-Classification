@@ -3,9 +3,7 @@ addpath('/home/sid/Dev/SVM-Classification/resources/svm')
 addpath('/home/sid/Dev/SVM-Classification/resources/SVMCourse/LSSVMlab')
 addpath('export_fig')
 
-%
 % train LS-SVM classifier with linear kernel 
-%
 type='c'; 
 gam = 1; 
 disp('Linear kernel'),
@@ -19,9 +17,7 @@ plotlssvm({X,Y,type,gam,[],'lin_kernel','preprocess'},{alpha,b});
 err = sum(Yht~=Yt); 
 fprintf('\n on test: #misclass = %d, error rate = %.2f%%\n', err, err/length(Yt)*100), 
 
-%
 % Train the LS-SVM classifier using polynomial kernel of different degrees
-%
 type='c'; 
 gam = 1; 
 t = 1; 
@@ -57,12 +53,8 @@ fprintf('\n on test: #misclass = %d, error rate = %.2f%%\n', err, err/length(Yt)
 
 export_fig('iris_linpol.pdf');
 
-%
 % use RBF kernel
-%
-
 % tune the sig2 while fix gam
-%
 disp('RBF kernel')
 gam = 1; sig2list=[0.01, 0.1, 1, 10];
 
@@ -85,15 +77,12 @@ for sig2=sig2list,
 end
 export_fig('iris_.pdf');
 
-%
 % make a plot of the misclassification rate wrt. sig2
-%
 figure;
 plot(log(sig2list), errlist, '*-'), 
 xlabel('log(sig2)'), ylabel('number of misclass'),
 
 % Overfitting in sigma and high polynomials degree
-
 gam = 1; sig2list=[0.001, 0.01]
 
 errlist=[];
